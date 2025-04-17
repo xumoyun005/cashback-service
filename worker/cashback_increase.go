@@ -27,6 +27,13 @@ func StartCashbackWorker() {
 func processCashback(req requests.CashbackRequest) {
 	db := config.DB
 	cashbackAmount := req.TariffPrice * 0.01
+
+	if cashbackAmount <= 0 {
+		logrus.WithField("trace_code", req.TraceCode).Warn("Cashback amount is zero, skipping")
+		sendResult(req.TraceCode, fmt.Errorf("cashback amount must be greater than 0"))
+		return
+	}
+
 	tx := db.Begin()
 
 	var cashback models.Cashback
@@ -82,5 +89,5 @@ func processCashback(req requests.CashbackRequest) {
 		return
 	}
 
-	sendResult(req.TraceCode, nil)
+	sendResult(req.TraceCode, nil, cashbackAmount)
 }

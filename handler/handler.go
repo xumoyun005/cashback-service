@@ -2,10 +2,8 @@ package handler
 
 import (
 	"cashback-app/requests"
-	"cashback-app/response"
 	"cashback-app/utils"
 	"cashback-app/worker"
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -13,31 +11,46 @@ import (
 )
 
 func HandleCashback(c *gin.Context) {
-	var raw map[string]interface{}
-	if err := c.BindJSON(&raw); err != nil {
-		c.JSON(http.StatusBadRequest, response.CashbackResponse{
-			StatusCode: 400,
-			Message:    "Bad Request: " + err.Error(),
-		})
+	var req requests.CashbackRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var req requests.CashbackRequest
-	jsonBytes, _ := json.Marshal(raw)
-	if err := json.Unmarshal(jsonBytes, &req); err != nil {
-		c.JSON(http.StatusInternalServerError, response.CashbackResponse{
-			StatusCode: 500,
-			Message:    "Failed to unmarshal JSON",
-		})
-		return
-	}
+	traceCode := utils.GenerateTraceCode()
+	req.TraceCode = traceCode
+
+	resultChan := make(chan worker.Result)
+	worker.ResultMap.Store(traceCode, resultChan)
+	defer worker.ResultMap.Delete(traceCode)
 
 	worker.EnqueueCashback(req)
 
-	c.JSON(http.StatusOK, response.CashbackResponse{
-		StatusCode: 200,
-		Message:    "Success",
-	})
+	select {
+	case res := <-resultChan:
+		if res.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status_code": 400,
+				"message":     res.Error.Error(),
+				"trace_code":  traceCode,
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"status_code": 200,
+			"message":     "Cashback added successfully",
+			"trace_code":  traceCode,
+			"data": gin.H{
+				"added_cashback": res.Data,
+			},
+		})
+	case <-time.After(5 * time.Second):
+		c.JSON(http.StatusRequestTimeout, gin.H{
+			"status_code": 408,
+			"message":     "Timeout",
+			"trace_code":  traceCode,
+		})
+	}
 }
 
 func HandleCashbackDecrease(c *gin.Context) {
