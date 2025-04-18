@@ -2,10 +2,10 @@ package config
 
 import (
 	"fmt"
+	logx "github.com/xumoyun005/logx/pkg"
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -15,7 +15,7 @@ var DB *gorm.DB
 func LoadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		logrus.Error("Error loading .env file", err.Error())
+		logx.Error("Error loading .env file", err.Error())
 	}
 }
 func ConnectDb() {
@@ -30,7 +30,7 @@ func ConnectDb() {
 	)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		logrus.Panic("Error connecting to database", err.Error())
+		logx.Panic("Error connecting to database", err.Error())
 	}
 	DB = db
 }

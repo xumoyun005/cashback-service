@@ -6,8 +6,7 @@ import (
 	"cashback-app/models"
 	"cashback-app/requests"
 	"fmt"
-
-	"github.com/sirupsen/logrus"
+	logx "github.com/xumoyun005/logx/pkg"
 	"gorm.io/gorm/clause"
 )
 
@@ -34,14 +33,14 @@ func processCashbackDecrease(req requests.CashbackDecreaseQueue) {
 
 	if err != nil {
 		tx.Rollback()
-		logrus.WithField("trace_code", req.TraceCode).Error("Record not found")
+		logx.WithField("trace_code", req.TraceCode).Error("Record not found")
 		sendResult(req.TraceCode, fmt.Errorf("cashback not found: %w", err))
 		return
 	}
 
 	if cashback.CashbackAmount < req.DecreaseCashbackAmount {
 		tx.Rollback()
-		logrus.WithField("trace_code", req.TraceCode).Error("Insufficient cashback")
+		logx.WithField("trace_code", req.TraceCode).Error("Insufficient cashback")
 		sendResult(req.TraceCode, fmt.Errorf("not enough cashback"))
 		return
 	}
@@ -53,7 +52,7 @@ func processCashbackDecrease(req requests.CashbackDecreaseQueue) {
 
 	if err := tx.Save(&cashback).Error; err != nil {
 		tx.Rollback()
-		logrus.WithField("trace_code", req.TraceCode).Error("Failed processing cashback")
+		logx.WithField("trace_code", req.TraceCode).Error("Failed processing cashback")
 		sendResult(req.TraceCode, fmt.Errorf("failed to process cashback: %w", err))
 		return
 	}
@@ -68,20 +67,20 @@ func processCashbackDecrease(req requests.CashbackDecreaseQueue) {
 
 	if req.DecreaseCashbackAmount <= 0 {
 		tx.Rollback()
-		logrus.WithField("trace_code", req.TraceCode).Error("Attempted to decrease by 0")
+		logx.WithField("trace_code", req.TraceCode).Error("Attempted to decrease by 0")
 		sendResult(req.TraceCode, fmt.Errorf("cannot decrease cashback by 0"))
 		return
 	}
 
 	if err := tx.Create(&history).Error; err != nil {
 		tx.Rollback()
-		logrus.WithField("trace_code", req.TraceCode).Error("Failed to create cashback history")
+		logx.WithField("trace_code", req.TraceCode).Error("Failed to create cashback history")
 		sendResult(req.TraceCode, fmt.Errorf("failed to create cashback history: %w", err))
 		return
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		logrus.WithField("trace_code", req.TraceCode).Error("Commit failed")
+		logx.WithField("trace_code", req.TraceCode).Error("Commit failed")
 		sendResult(req.TraceCode, fmt.Errorf("failed to commit transaction: %w", err))
 		return
 	}
