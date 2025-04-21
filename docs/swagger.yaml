@@ -1,0 +1,179 @@
+basePath: /api
+definitions:
+  requests.CashbackDecreaseQueue:
+    properties:
+      cinerama_user_id:
+        type: integer
+      decrease_cashback_amount:
+        type: number
+      device:
+        type: string
+      host_ip:
+        type: string
+    required:
+    - cinerama_user_id
+    - decrease_cashback_amount
+    - device
+    - host_ip
+    type: object
+  requests.CashbackRequest:
+    properties:
+      cinerama_user_id:
+        type: integer
+      device:
+        type: string
+      host_ip:
+        type: string
+      tariff_price:
+        type: number
+    required:
+    - cinerama_user_id
+    - device
+    - host_ip
+    - tariff_price
+    type: object
+  response.CashbackResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: '@xumoyiddin_xolmuminov'
+    url: http://www.swagger.io/support
+  description: This cashback for buying tariffs
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Cashback Service API
+  version: "1.0"
+paths:
+  /cashback:
+    post:
+      consumes:
+      - application/json
+      description: Increase cashback for a user by sending a request
+      parameters:
+      - description: Cashback request body
+        in: body
+        name: cashback
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CashbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+        "408":
+          description: Request Timeout
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+      summary: Increase cashback
+      tags:
+      - Cashback
+  /cashback/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get the current cashback information for a Cinerama user
+      parameters:
+      - description: Cinerama User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+      summary: Get cashback by Cinerama user ID
+      tags:
+      - Cashback
+  /cashback/decrease:
+    post:
+      consumes:
+      - application/json
+      description: Decrease cashback for a user by sending a request
+      parameters:
+      - description: Cashback decrease request body
+        in: body
+        name: decrease
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CashbackDecreaseQueue'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+        "408":
+          description: Request Timeout
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+      summary: Decrease cashback
+      tags:
+      - Cashback
+  /cashback_history/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get full cashback history records for a Cinerama user
+      parameters:
+      - description: Cinerama User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.CashbackResponse'
+      summary: Get cashback history by Cinerama user ID
+      tags:
+      - Cashback
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

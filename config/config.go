@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	logx "github.com/xumoyun005/logx/pkg"
+	"gorm.io/gorm/logger"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -28,7 +29,7 @@ func ConnectDb() {
 		os.Getenv("DB_NAME"),
 		os.Getenv("DB_SSLMODE"),
 	)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	if err != nil {
 		logx.Panic("Error connecting to database", err.Error())
 	}

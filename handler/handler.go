@@ -14,6 +14,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// HandleCashback godoc
+// @Summary Increase cashback
+// @Description Increase cashback for a user by sending a request
+// @Tags Cashback
+// @Accept json
+// @Produce json
+// @Param cashback body requests.CashbackRequest true "Cashback request body"
+// @Success 200 {object} response.CashbackResponse
+// @Failure 400 {object} response.CashbackResponse
+// @Failure 408 {object} response.CashbackResponse
+// @Router /cashback [post]
 func HandleCashback(c *gin.Context) {
 	var req requests.CashbackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -42,6 +53,7 @@ func HandleCashback(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusOK, response.CashbackResponse{
+			Code: 6000,
 			Data: res.Data,
 		})
 	case <-time.After(5 * time.Second):
@@ -51,6 +63,17 @@ func HandleCashback(c *gin.Context) {
 	}
 }
 
+// HandleCashbackDecrease godoc
+// @Summary Decrease cashback
+// @Description Decrease cashback for a user by sending a request
+// @Tags Cashback
+// @Accept json
+// @Produce json
+// @Param decrease body requests.CashbackDecreaseQueue true "Cashback decrease request body"
+// @Success 200 {object} response.CashbackResponse
+// @Failure 400 {object} response.CashbackResponse
+// @Failure 408 {object} response.CashbackResponse
+// @Router /cashback/decrease [post]
 func HandleCashbackDecrease(c *gin.Context) {
 	var req requests.CashbackDecreaseQueue
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -77,6 +100,7 @@ func HandleCashbackDecrease(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusOK, response.CashbackResponse{
+			Code: 6001,
 			Data: res.Data,
 		})
 	case <-time.After(5 * time.Second):
@@ -85,6 +109,18 @@ func HandleCashbackDecrease(c *gin.Context) {
 		})
 	}
 }
+
+// GetCashbackByCineramaId godoc
+// @Summary Get cashback by Cinerama user ID
+// @Description Get the current cashback information for a Cinerama user
+// @Tags Cashback
+// @Accept json
+// @Produce json
+// @Param id path int true "Cinerama User ID"
+// @Success 200 {object} response.CashbackResponse
+// @Failure 400 {object} response.CashbackResponse
+// @Failure 404 {object} response.CashbackResponse
+// @Router /cashback/{id} [get]
 func GetCashbackByCineramaId(c *gin.Context) {
 
 	cineramaUserId, err := strconv.Atoi(c.Param("id"))
@@ -111,7 +147,7 @@ func GetCashbackByCineramaId(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response.CashbackResponse{
-		Code: 200,
+		Code: 6002,
 		Data: gin.H{
 			"created_at":       cashback.CreatedAt,
 			"updated_at":       cashback.UpdatedAt,
@@ -122,6 +158,17 @@ func GetCashbackByCineramaId(c *gin.Context) {
 	})
 }
 
+// GetCashbackHistoryByCineramaId godoc
+// @Summary Get cashback history by Cinerama user ID
+// @Description Get full cashback history records for a Cinerama user
+// @Tags Cashback
+// @Accept json
+// @Produce json
+// @Param id path int true "Cinerama User ID"
+// @Success 200 {object} response.CashbackResponse
+// @Failure 400 {object} response.CashbackResponse
+// @Failure 404 {object} response.CashbackResponse
+// @Router /cashback_history/{id} [get]
 func GetCashbackHistoryByCineramaId(c *gin.Context) {
 	cineramaUserId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -158,9 +205,9 @@ func GetCashbackHistoryByCineramaId(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.CashbackResponse{
-		Code: 200,
+		Code: 6003,
 		Data: gin.H{
-			"cashback_histories": filterHistory,
+			"cashback_histories": filterHistory(cashbackHistory),
 			"cinerama_user_id":   cineramaUserId,
 		},
 	})
