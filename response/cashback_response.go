@@ -1,7 +1,6 @@
 package response
 
 type CashbackResponse struct {
-	StatusCode int         `json:"status_code"`
-	Message    string      `json:"message"`
-	Data       interface{} `json:"data,omitempty"`
+	Code int         `json:"code"`
+	Data interface{} `json:"data,omitempty"`
 }

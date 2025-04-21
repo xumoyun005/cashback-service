@@ -8,5 +8,7 @@ func RegisterRoutes(r *gin.Engine) {
 	{
 		api.POST("/cashback", handler.HandleCashback)
 		api.POST("/cashback/decrease", handler.HandleCashbackDecrease)
+		api.GET("/cashback/:id", handler.GetCashbackByCineramaId)
+		api.GET("/cashback_history/:id", handler.GetCashbackHistoryByCineramaId)
 	}
 }
