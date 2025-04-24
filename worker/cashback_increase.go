@@ -25,9 +25,8 @@ func StartCashbackWorker() {
 
 func processCashback(req requests.CashbackRequest) {
 	db := config.DB
-	cashbackAmount := req.TariffPrice * 0.01
 
-	if cashbackAmount <= 0 {
+	if req.CashbackAmount <= 0 {
 		logx.WithField("trace_code", req.TraceCode).Warn("Cashback amount is zero, skipping")
 		sendResult(req.TraceCode, fmt.Errorf("cashback amount must be greater than 0"))
 		return
@@ -42,7 +41,7 @@ func processCashback(req requests.CashbackRequest) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			cashback = models.Cashback{
 				CineramaUserId: req.CineramaUserID,
-				CashbackAmount: cashbackAmount,
+				CashbackAmount: req.CashbackAmount,
 				TuronUserId:    0,
 			}
 			if err := tx.Create(&cashback).Error; err != nil {
@@ -58,7 +57,7 @@ func processCashback(req requests.CashbackRequest) {
 			return
 		}
 	} else {
-		cashback.CashbackAmount += cashbackAmount
+		cashback.CashbackAmount += req.CashbackAmount
 		if err := tx.Save(&cashback).Error; err != nil {
 			tx.Rollback()
 			logx.WithField("trace_code", req.TraceCode).Error("Error updating cashback")
@@ -71,7 +70,7 @@ func processCashback(req requests.CashbackRequest) {
 		CashbackId:     cashback.ID,
 		Device:         req.Device,
 		HostIp:         req.HostIP,
-		CashbackAmount: cashbackAmount,
+		CashbackAmount: req.CashbackAmount,
 		Type:           enum.Increased,
 	}
 
@@ -88,5 +87,5 @@ func processCashback(req requests.CashbackRequest) {
 		return
 	}
 
-	sendResult(req.TraceCode, nil, cashbackAmount)
+	sendResult(req.TraceCode, nil, req.CashbackAmount)
 }
